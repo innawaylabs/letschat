@@ -44,14 +44,7 @@ class LogIn : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LogInScreen(
-                        {
-                            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
-                        },
-                        {
-                            Toast.makeText(this, "Login failed", Toast.LENGTH_SHORT).show()
-                        }
-                    )
+                    LogInScreen()
                 }
             }
         }
@@ -59,10 +52,10 @@ class LogIn : ComponentActivity() {
 }
 
 @Composable
-fun LogInScreen(onLoginSuccessful: () -> Unit, onLoginFailure: () -> Unit) {
+fun LogInScreen() {
     val context = LocalContext.current
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("ravi@gmail.com") }
+    var password by remember { mutableStateOf("123456") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -75,13 +68,13 @@ fun LogInScreen(onLoginSuccessful: () -> Unit, onLoginFailure: () -> Unit) {
             modifier = Modifier.padding(top = 16.dp)
         )
         OutlinedTextField(
-            value = "",
+            value = username,
             onValueChange = { username = it },
             label = { Text("Username") },
             modifier = Modifier.padding(top = 16.dp)
         )
         OutlinedTextField(
-            value = "",
+            value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
             modifier = Modifier.padding(top = 16.dp),
@@ -92,11 +85,7 @@ fun LogInScreen(onLoginSuccessful: () -> Unit, onLoginFailure: () -> Unit) {
         )
         Button(
             onClick = {
-                if (validateLogin(username, password)) {
-                    onLoginSuccessful()
-                } else {
-                    onLoginFailure()
-                }
+                validateLogin(context, username, password)
             },
             modifier = Modifier.padding(top = 16.dp)
             // , colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue)
@@ -116,26 +105,22 @@ fun LogInScreen(onLoginSuccessful: () -> Unit, onLoginFailure: () -> Unit) {
 }
 
 fun openSignUpActivity(context: Context) {
-    val intent = Intent(context, SignUp::class.java)
-    context.startActivity(intent)
+    context.startActivity(Intent(context, SignUp::class.java))
 }
 
-fun validateLogin(username: String, password: String): Boolean {
+fun validateLogin(context: Context, username: String, password: String) {
     var mAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    return true
+    mAuth.signInWithEmailAndPassword(username, password).addOnCompleteListener() { task ->
+        if (task.isSuccessful) {
+            openMainActivity(context)
+        } else {
+            Toast.makeText(context, "Invalid username or password", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    val context = LocalContext.current
-
-    LogInScreen(
-        {
-            Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-        },
-        {
-            Toast.makeText(context, "Login failed", Toast.LENGTH_SHORT).show()
-        }
-    )
+    LogInScreen()
 }
